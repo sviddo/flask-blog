@@ -1,15 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>
-        {% if title %}
-            Flask Blog - {{ title }}
-        {% else %}
-            Flask Blog
-        {% endif %}
-    </title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
     <h1>About page</h1>
-</body>
-</html>
+{% endblock content %}
