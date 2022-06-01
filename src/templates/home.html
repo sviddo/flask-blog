@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title></title>
+    <title>
+        {% if title %}
+            Flask Blog - {{ title }}
+        {% else %}
+            Flask Blog
+        {% endif %}
+    </title>
 </head>
 <body>
     {% for post in posts%}
