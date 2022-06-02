@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, flash, redirect
-from .forms import RegistrationForm
+from .forms import LoginForm, RegistrationForm
 
 app = Flask(__name__)
 
@@ -41,3 +41,15 @@ def register():
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('home'))
     return render_template('register.html', title='Register', form=form)
+
+
+@app.route("/login", methods=['GET', 'POST'])
+def log_in():
+    form = LoginForm()
+    if form.validate_on_submit():                                                                       #
+        if form.email.data == "test@test.com" and form.password.data == "password":                     #
+            flash('You have been logged in!', 'success')                                                #  simulating authentication
+            return redirect(url_for('home'))                                                            #
+        else:                                                                                           #
+            flash('Authentication was rejected. Please, check your username and password', 'danger')    #                                                              
+    return render_template('login.html', title='Log in', form=form)
