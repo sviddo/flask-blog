@@ -1,9 +1,34 @@
 from flask import Flask, render_template, url_for, flash, redirect
-from .forms import LoginForm, RegistrationForm
+from flask_sqlalchemy import SQLAlchemy
+from forms import LoginForm, RegistrationForm
+from datetime import datetime
 
 app = Flask(__name__)
-
 app.config["SECRET_KEY"] = "e5629898b9e96d1021f1433a665bb77b"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
+    password = db.Column(db.String(60), nullable=False)
+    posts = db.relationship("Post", backref="author", lazy=True)
+
+    def __str__(self):
+        return f"User {self.username}, {self.email}, {self.image_file}"
+
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    def __str__(self):
+        return f"User {self.title}, {self.date_posted}"
 
 posts = [
     {
