@@ -1,6 +1,7 @@
 from flask import render_template, url_for, flash, redirect
-from src import app
+from src import app, db, bcrypt
 from src.forms import LoginForm, RegistrationForm
+from src.models import User, Post
 
 
 posts = [
@@ -37,18 +38,22 @@ def about():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Your account has been created! Now you are able to log in', 'success')
+        return redirect(url_for('log_in'))
     return render_template('register.html', title='Register', form=form)
 
 
 @app.route("/login", methods=['GET', 'POST'])
 def log_in():
     form = LoginForm()
-    if form.validate_on_submit():                                                                       #
+    if form.validate_on_submit():                                                                       #                     
         if form.email.data == "test@test.com" and form.password.data == "password":                     #
-            flash('You have been logged in!', 'success')                                                #  simulating authentication
-            return redirect(url_for('home'))                                                            #
+            flash('You have been logged in!', 'success')                                                #  authentication simulation
+            return redirect(url_for('home'))                                                            #  
         else:                                                                                           #
-            flash('Authentication was rejected. Please, check your username and password', 'danger')    #                                                              
+            flash('Authentication was rejected. Please, check your username and password', 'danger')    #                                                           
     return render_template('login.html', title='Log in', form=form)
