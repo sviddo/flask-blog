@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect
 from src import app, db, bcrypt
 from src.forms import LoginForm, RegistrationForm
 from src.models import User, Post
-from flask_login import login_user, current_user
+from flask_login import login_user, current_user, logout_user
 
 
 posts = [
@@ -63,3 +63,9 @@ def log_in():
         else:
             flash('Authentication is rejected. Please, check your email and password', 'danger')                                                         
     return render_template('login.html', title='Log in', form=form)
+
+
+@app.route("/logout")
+def log_out():
+    logout_user()
+    return redirect(url_for('home'))
