@@ -2,6 +2,7 @@ from flask import render_template, url_for, flash, redirect
 from src import app, db, bcrypt
 from src.forms import LoginForm, RegistrationForm
 from src.models import User, Post
+from flask_login import login_user, current_user
 
 
 posts = [
@@ -36,6 +37,8 @@ def about():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -49,11 +52,14 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def log_in():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = LoginForm()
-    if form.validate_on_submit():                                                                       #                     
-        if form.email.data == "test@test.com" and form.password.data == "password":                     #
-            flash('You have been logged in!', 'success')                                                #  authentication simulation
-            return redirect(url_for('home'))                                                            #  
-        else:                                                                                           #
-            flash('Authentication was rejected. Please, check your username and password', 'danger')    #                                                           
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            return redirect(url_for('home'))
+        else:
+            flash('Authentication is rejected. Please, check your email and password', 'danger')                                                         
     return render_template('login.html', title='Log in', form=form)
