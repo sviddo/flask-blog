@@ -1,5 +1,6 @@
 import secrets
 import os
+from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from src import app, db, bcrypt
 from src.forms import LoginForm, RegistrationForm, UpdateAccountForm
@@ -79,10 +80,15 @@ def save_image(form_image):
     _, file_extension = os.path.splitext(form_image.filename)
     image_filename = random_hex + file_extension
     image_path = os.path.join(app.root_path, "static/profile_pics", image_filename)
-    form_image.save(image_path)
+
+    output_size = (125, 125)
+    cropped_image = Image.open(form_image)
+    cropped_image.thumbnail(output_size)
+
+    cropped_image.save(image_path)
 
     return image_filename
-    
+
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
