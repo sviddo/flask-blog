@@ -3,33 +3,15 @@ import os
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from src import app, db, bcrypt
-from src.forms import LoginForm, RegistrationForm, UpdateAccountForm
+from src.forms import LoginForm, RegistrationForm, UpdateAccountForm, PostForm
 from src.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
-
-
-posts = [
-    {
-        'author': 'Vlad Snisar',
-        'title': 'My first flask blog page',
-        'content': 'This is my first flask blog page, here you can view posts made by other users, \
-            create your own ones, register, authenticate, change profile photo and do other cool stuff. Feel free to explore.',
-        'date_posted': 'june 01, 2022'
-    },
-    {
-        'author': 'Guido van Rossum',
-        'title': 'Python programming language',
-        'content': 'I\'m a father of Python programming language. \
-            Van Rossum thought he needed a name that was short, unique, \
-                and slightly mysterious, so he decided to call the language Python.',
-        'date_posted': 'June 01, 2022'
-    }
-]
 
 
 @app.route("/home")
 @app.route("/")
 def home():
+    posts = Post.query.all()
     return render_template("home.html", posts=posts)
 
 
@@ -109,3 +91,23 @@ def account():
     image_file = url_for('static', filename="profile_pics/" + current_user.image_file)
 
     return render_template('account.html', title='Account', form=form, image_file=image_file)
+
+
+@app.route("/post/new", methods=['GET', 'POST'])
+@login_required
+def create_new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post has been created!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title='New Post',
+                           form=form, legend='New Post')
+
+
+@app.route("/post/<int:post_id>")
+def post(post_id: int):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
